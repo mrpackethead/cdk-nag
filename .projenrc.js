@@ -19,21 +19,21 @@ const project = new awscdk.AwsCdkConstructLibrary({
     distName: 'cdk-nag',
     module: 'cdk_nag',
   },
-  publishToNuget: {
-    packageId: 'Cdklabs.CdkNag',
-    dotNetNamespace: 'Cdklabs.CdkNag',
-  },
-  publishToMaven: {
-    mavenGroupId: 'io.github.cdklabs',
-    javaPackage: 'io.github.cdklabs.cdknag',
-    mavenArtifactId: 'cdknag',
-    mavenEndpoint: 'https://s01.oss.sonatype.org',
-  },
-  publishToGo: {
-    moduleName: 'github.com/cdklabs/cdk-nag-go',
-    gitUserName: 'cdklabs-automation',
-    gitUserEmail: 'cdklabs-automation@amazon.com',
-  },
+  // publishToNuget: {
+  //   packageId: 'Cdklabs.CdkNag',
+  //   dotNetNamespace: 'Cdklabs.CdkNag',
+  // },
+  // publishToMaven: {
+  //   mavenGroupId: 'io.github.cdklabs',
+  //   javaPackage: 'io.github.cdklabs.cdknag',
+  //   mavenArtifactId: 'cdknag',
+  //   mavenEndpoint: 'https://s01.oss.sonatype.org',
+  // },
+  // publishToGo: {
+  //   moduleName: 'github.com/cdklabs/cdk-nag-go',
+  //   gitUserName: 'cdklabs-automation',
+  //   gitUserEmail: 'cdklabs-automation@amazon.com',
+  // },
   projenUpgradeSecret: 'PROJEN_GITHUB_TOKEN',
   autoApproveOptions: {
     allowedUsernames: ['cdklabs-automation', 'dontirun'],
