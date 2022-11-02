@@ -751,6 +751,7 @@ Unimplemented rules from the AWS PCI DSS 3.2.1 Conformance Pack.
 | NZISM3.6-root-account-mfa-enabled									|
 | NZISM3.6-securityhub-enabled									    |
 | NZISM3.6-ssm-document-not-public                                  |
+| NZISM3.6-lambda-function-public-access-prohibited					|
 
 
 

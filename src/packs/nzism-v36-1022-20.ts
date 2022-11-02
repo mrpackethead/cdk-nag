@@ -16,7 +16,10 @@ import {
   CloudTrailEncryptionEnabled,
   CloudTrailLogFileValidationEnabled,
 } from '../rules/cloudtrail';
-import { CloudWatchLogGroupRetentionPeriod } from '../rules/cloudwatch';
+import {
+  CloudWatchLogGroupEncrypted,
+  CloudWatchLogGroupRetentionPeriod,
+} from '../rules/cloudwatch';
 import { DMSReplicationNotPublic } from '../rules/dms';
 import {
   DynamoDBAutoScalingEnabled,
@@ -43,13 +46,14 @@ import {
 } from '../rules/elb';
 import { IAMPolicyNoStatementsWithAdminAccess } from '../rules/iam';
 import { KMSBackingKeyRotationEnabled } from '../rules/kms';
-import { LambdaInsideVPC } from '../rules/lambda';
+//import { LambdaInsideVPC } from '../rules/lambda';
 import {
   OpenSearchEncryptedAtRest,
   OpenSearchInVPCOnly,
   OpenSearchNodeToNodeEncryption,
 } from '../rules/opensearch';
 import {
+  RDSAutomaticMinorVersionUpgradeEnabled,
   RDSInBackupPlan,
   RDSInstanceDeletionProtectionEnabled,
   RDSInstancePublicAccess,
@@ -103,6 +107,7 @@ import { WAFv2LoggingEnabled } from '../rules/waf';
  * EmrMasterNoPublicIp
  * RdsSnapshotEncrypted
  * VpcSgOpenOnlyToAuthorizedPorts
+ * lambda-function-public-access-prohibited
  *
  * A number of other checks from the NZISM Conformance Packs are account level checkes, and are excluded from stack level checks.
  *
@@ -132,7 +137,6 @@ export class NZISM36Checks extends NagPack {
       this.checkElastiCache(node);
       this.checkOpenSearch(node);
       this.checkIAM(node);
-      this.checkLambda(node);
       this.checkRedshift(node);
       this.checkS3(node);
       this.checkSageMaker(node);
@@ -167,7 +171,8 @@ export class NZISM36Checks extends NagPack {
   private checkCloudFront(node: CfnResource): void {
     this.applyRule({
       info: 'The CloudFront distribution does not have access logging enabled. | SHOULD 16.6.10.C.02[CID:2013], MUST 23.5.11.C.01[CID:7496]',
-      explanation: 'CloudFrontDistributionAccessLogging',
+      explanation:
+        'Enabling access logs helps operators track all viewer requests for the content delivered through the Content Delivery Network.',
       level: NagMessageLevel.ERROR,
       rule: CloudFrontDistributionAccessLogging,
       node: node,
@@ -238,6 +243,15 @@ export class NZISM36Checks extends NagPack {
         'Ensure a minimum duration of event log data is retained for your log groups to help with troubleshooting and forensics investigations. The lack of available past event log data makes it difficult to reconstruct and identify potentially malicious events.',
       level: NagMessageLevel.ERROR,
       rule: CloudWatchLogGroupRetentionPeriod,
+      node: node,
+    });
+
+    this.applyRule({
+      info: 'The CloudWatch Log Group is not encrypted with an AWS KMS key | MUST 16.6.12.C.01[CID:2022], MUST 23.5.11.C.01[CID:7496]',
+      explanation:
+        'To help protect sensitive data at rest, ensure encryption is enabled for your Amazon CloudWatch Log Groups.',
+      level: NagMessageLevel.ERROR,
+      rule: CloudWatchLogGroupEncrypted,
       node: node,
     });
   }
@@ -498,21 +512,21 @@ export class NZISM36Checks extends NagPack {
     });
   }
 
-  /**
-   * Check Lambda Resources
-   * @param node the CfnResource to check
-   * @param ignores list of ignores for the resource
-   */
-  private checkLambda(node: CfnResource) {
-    this.applyRule({
-      info: 'The Lambda function is not VPC enabled | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
-      explanation:
-        'Because of their logical isolation, domains that reside within an Amazon VPC have an extra layer of security when compared to domains that use public endpoints.',
-      level: NagMessageLevel.ERROR,
-      rule: LambdaInsideVPC,
-      node: node,
-    });
-  }
+  // /**
+  //  * Check Lambda Resources
+  //  * @param node the CfnResource to check
+  //  * @param ignores list of ignores for the resource
+  //  */
+  // private checkLambda(node: CfnResource) {
+  //   this.applyRule({
+  //     info: 'The Lambda function is not VPC enabled | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
+  //     explanation:
+  //       'Because of their logical isolation, domains that reside within an Amazon VPC have an extra layer of security when compared to domains that use public endpoints.',
+  //     level: NagMessageLevel.ERROR,
+  //     rule: LambdaInsideVPC,
+  //     node: node,
+  //   });
+  // }
 
   /**
    * Check OpenSearch Resources
@@ -555,7 +569,7 @@ export class NZISM36Checks extends NagPack {
    */
   private checkRDS(node: CfnResource): void {
     this.applyRule({
-      info: 'The RDS DB Instance or Aurora Cluster does not have deletion protection enabled | MUST 22.1.26.C.01[CID:4849]
+      info: 'The RDS DB Instance or Aurora Cluster does not have deletion protection enabled | MUST 22.1.26.C.01[CID:4849]',
       explanation:
         'Ensure Amazon Relational Database Service (Amazon RDS) instances and clusters have deletion protection enabled. Use deletion protection to prevent your Amazon RDS DB instances and clusters from being accidentally or maliciously deleted, which can lead to loss of availability for your applications.',
       level: NagMessageLevel.ERROR,
@@ -573,7 +587,7 @@ export class NZISM36Checks extends NagPack {
     });
 
     this.applyRule({
-      info: 'The RDS DB instance is not in an AWS Backup plan | MUST 22.1.26.C.01[CID:4849]'
+      info: 'The RDS DB instance is not in an AWS Backup plan | MUST 22.1.26.C.01[CID:4849]',
       explanation:
         'To help with data back-up processes, ensure your Amazon Relational Database Service (Amazon RDS) instances are a part of an AWS Backup plan. AWS Backup is a fully managed backup service with a policy-based backup solution. This solution simplifies your backup management and enables you to meet your business and regulatory backup compliance requirements.',
       level: NagMessageLevel.ERROR,
@@ -606,6 +620,14 @@ export class NZISM36Checks extends NagPack {
         'Because sensitive data can exist at rest in Amazon RDS instances, enable encryption at rest to help protect that data.',
       level: NagMessageLevel.WARN,
       rule: RDSStorageEncrypted,
+      node: node,
+    });
+
+    this.applyRule({
+      info: 'RDS DB Instance is not configured for minor patches | SHOULD 12.4.4.C.05[CID:3452]',
+      explanation: 'Provides automatic Patching in the Database',
+      level: NagMessageLevel.WARN,
+      rule: RDSAutomaticMinorVersionUpgradeEnabled,
       node: node,
     });
   }

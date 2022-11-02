@@ -222,6 +222,7 @@ ElbCustomSecurityPolicySslCheck
 EmrMasterNoPublicIp
 RdsSnapshotEncrypted
 VpcSgOpenOnlyToAuthorizedPorts
+lambda-function-public-access-prohibited
 
 A number of other checks from the NZISM Conformance Packs are account level checkes, and are excluded from stack level checks.
 
