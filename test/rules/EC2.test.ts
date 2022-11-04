@@ -34,6 +34,7 @@ import {
   EC2RestrictedInbound,
   EC2RestrictedSSH,
   EC2SecurityGroupDescription,
+  EC2SecurityGroupOnlyTcp443,
 } from '../../src/rules/ec2';
 import { validateStack, TestType, TestPack } from './utils';
 
@@ -50,6 +51,7 @@ const testPack = new TestPack([
   EC2RestrictedInbound,
   EC2RestrictedSSH,
   EC2SecurityGroupDescription,
+  EC2SecurityGroupOnlyTcp443,
 ]);
 let stack: Stack;
 
@@ -533,6 +535,54 @@ describe('Amazon Elastic Block Store (EBS)', () => {
         encrypted: true,
       });
       validateStack(stack, ruleId, TestType.COMPLIANCE);
+    });
+  });
+});
+
+describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 for ingress iPv4 traffic', () => {
+  const ruleId = 'EC2SecurityGroupOnlyTcp443';
+  test('Noncompliance 1', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup', {
+      groupDescription: 'security group tcp port 80 open',
+      securityGroupIngress: [
+        {
+          fromPort: 80,
+          ipProtocol: 'tcp',
+          cidrIp: '0.0.0.0/0',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+
+  test('Noncompliance 2', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup2', {
+      groupDescription: 'security group with udp port 53',
+      securityGroupIngress: [
+        {
+          fromPort: 53,
+          ipProtocol: 'udp',
+          cidrIp: '0.0.0.0/0',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+
+  test('Compliance', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup1', {
+      groupDescription: 'security group with inbound tcp 443',
+      securityGroupIngress: [],
+    });
+    new CfnSecurityGroup(stack, 'rSecurityGroup2', {
+      groupDescription: 'security group with tcp 443 ingress allowed',
+      securityGroupIngress: [
+        {
+          fromPort: 443,
+          ipProtocol: 'tcp',
+          cidrIp: '0.0.0.0/0',
+        },
+      ],
     });
   });
 });

@@ -32,6 +32,7 @@ import {
   EC2InstancesInVPC,
   EC2RestrictedSSH,
   EC2EBSVolumeEncrypted,
+  EC2SecurityGroupOnlyTcp443,
 } from '../rules/ec2';
 import { ECSTaskDefinitionUserForHostMode } from '../rules/ecs';
 import { EFSEncrypted, EFSInBackupPlan } from '../rules/efs';
@@ -352,6 +353,15 @@ export class NZISM36Checks extends NagPack {
         'Not allowing ingress (or remote) traffic from 0.0.0.0/0 or ::/0 to port 22 on your resources helps to restrict remote access.',
       level: NagMessageLevel.ERROR,
       rule: EC2RestrictedSSH,
+      node: node,
+    });
+
+    this.applyRule({
+      info: 'The Security Group allows access other than tcp 443 - SHOULD 18.1.13.C.02[CID:3205]',
+      explanation:
+        'Not allowing ingress (or remote) traffic to ports other than tcp port 443 helps improve security',
+      level: NagMessageLevel.WARN,
+      rule: EC2SecurityGroupOnlyTcp443,
       node: node,
     });
   }

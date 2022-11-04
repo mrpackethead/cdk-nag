@@ -651,6 +651,7 @@ describe('Check NagPack Details', () => {
         'NZISM.36.1022.20-CloudTrailEncryptionEnabled',
         // from checkEC2
         'NZISM.36.1022.20-EC2EBSVolumeEncrypted',
+        'NZISM.36.1022.20-EC2SecurityGroupOnlyTcp443',
         // from checkECS
         'NZISM.36.1022.20-ECSTaskDefinitionUserForHostMode',
         // from checkEFS

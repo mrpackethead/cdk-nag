@@ -771,6 +771,7 @@ Virtual Private Cloud (Amazon VPC). By default, the flow log record includes val
 | NZISM3.6-1022.20-SageMakerNotebookInstanceKMSKeyConfigured | The SageMaker notebook is not encrypted with a KMS key | Because sensitive data can exist at rest in SageMaker notebook, enable encryption at rest to help protect that data | 22.1.24.C.04[CID:4839] |
 | NZISM3.6-1022.20-SecretsManagerUsingKMSKey | The secret is not encrypted with a KMS Customer managed key |To help protect data at rest, ensure encryption with AWS Key Management Service (AWS KMS) is enabled for AWS Secrets Manager secrets. Because sensitive data can exist at rest in Secrets Manager secrets, enable encryption at rest to help protect that data | 22.1.24.C.04[CID:4839] |
 | NZISM3.6-1022.20-SNSEncryptedKMS | The SNS topic does not have KMS encryption enabled | To help protect data at rest, ensure that your Amazon Simple Notification Service (Amazon SNS) topics require encryption using AWS Key Management Service (AWS KMS) Because sensitive data can exist at rest in published messages, enable encryption at rest to help protect that data | 22.1.24.C.04[CID:4839] |
+| NZISM3.6-1022.20-EC2SecurityGroupOnlyTcp443	| Only port tcp 443 shoudl be permitted in ingress security group | Not allowing ingress (or remote) traffic to ports other than tcp port 443 helps improve security |18.1.13.C.02[CID:3205]  |
 
 ### Excluded Rules
 
@@ -794,7 +795,7 @@ Unimplemented rules from the NSISM 3.6 Conformance Pack.
 | ecr-private-image-scanning-enabled						|       | MUST 12.4.4.C.02[CID:3449] | Account Level Check |
 | ecs-containers-readonly-access							|       | SHOULD 14.1.8.C.01[CID:1149] | ???? |
 | elb-custom-security-policy-ssl-check						|       | SHOULD 17.4.16.C.01[CID:2598], SHOULD NOT 17.4.16.C.02[CID:2600] | Not Yet Implemented |
-| emr-master-no-public-ip									| EMR clusters' master nodes have no public IP | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466] | ??? |
+| emr-master-no-public-ip									| EMR clusters' master nodes have no public IP | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466] | Account Level Check |
 | federate-with-central-idp									|       | MUST 19.1.12.C.01[CID:3562], MUST 18.4.9.C.01[CID:3815], SHOULD 18.4.12.C.01[CID:3875], MUST 23.4.10.C.01[CID:7466] | Account Level Check | 
 | iam-password-policy										| Account password policy for IAM users meet the specified requirements indicated in the parameters.      | SHOULD 16.1.40.C.02[CID:1858] | Account Level Check |
 | iam-root-access-key-check									| The Account IAM Root User has an access key(s) | SHOULD 16.3.5.C.02[CID:1946] | Account Level Check |
@@ -802,13 +803,12 @@ Unimplemented rules from the NSISM 3.6 Conformance Pack.
 | kms-cmk-for-each-data-classification						|       | SHOULD 17.9.25.C.01[CID:3021] | Account Level Check |
 | lambda-function-public-access-prohibited					| Lambda function policies should not be publically invokable | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466] | Not Yet Implemented |
 | mfa-enabled-for-iam-console-access						| IAM Users have MFA enabled for console access | SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953], MUST 23.3.19.C.01[CID:7436], MUST 23.3.19.C.01[CID:7437] | Account Level Check |
-| rds-snapshot-encrypted									| RDS snapshots are encrypted     | SHOULD 17.1.46.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839] | ???? |
-| rds-snapshots-public-prohibited							| RDS snapshots are not public      | SHOULD 20.4.4.C.02[CID:4441] | ????? |
+| rds-snapshot-encrypted									| RDS snapshots are encrypted     | SHOULD 17.1.46.C.04[CID:2082], SHOULD 20.4.4.C.02[CID:4441], SHOULD 22.1.24.C.04[CID:4839] | Account Level Check |
+| rds-snapshots-public-prohibited							| RDS snapshots are not public      | SHOULD 20.4.4.C.02[CID:4441] | Account Level Check |
 | root-account-hardware-mfa-enabled							| The AWS Account root user is hardware MFA enabled.      | SHOULD 16.1.35.C.02[CID:1841], SHOULD 16.4.31.C.02[CID:6843], SHOULD 16.7.34.C.02[CID:6953], MUST 23.3.19.C.01[CID:7436], MUST 23.3.19.C.01[CID:7437] | Account Level Check | 
 | root-account-mfa-enabled									| The AWS Account root user is MFA enabled      | SHOULD 16.1.35.C.02[CID:1841], MUST 23.3.19.C.01[CID:7436], MUST 23.3.19.C.01[CID:7437] | Account Level Check |
 | securityhub-enabled									    | The AWS Account has Security Hub enabled.      | SHOULD 18.4.12.C.01[CID:3875] | Account Level Check |
 | ssm-document-not-public                                  	| SSM documents are not public      | MUST 23.4.10.C.01[CID:7466] | Account Level Check |
-| vpc-sg-open-only-to-authorized-ports						| Security Groups only allow inbound 0.0.0.0/0 from authorized TCP or UDP ports | SHOULD 18.1.13.C.02[CID:3205] | ?????? |
 
 
 

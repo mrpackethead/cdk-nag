@@ -87,9 +87,10 @@ Parameters:
 None
 
 
-## vpc-sg-open-only-to-authorized-ports
+~~## vpc-sg-open-only-to-authorized-ports~~
 
-Checks whether any security groups with inbound 0.0.0.0/0 have TCP or UDP ports accessible. The rule is NON_COMPLIANT when a security group with inbound 0.0.0.0/0 has a port accessible which is not specified in the rule parameters.
+
+~~Checks whether any security groups with inbound 0.0.0.0/0 have TCP or UDP ports accessible. The rule is NON_COMPLIANT when a security group with inbound 0.0.0.0/0 has a port accessible which is not specified in the rule parameters.
 
 Identifier: VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS
 
@@ -97,7 +98,7 @@ Trigger type: Configuration changes
 
 AWS Region: All supported AWS regions except Asia Pacific (Jakarta), Middle East (UAE), Asia Pacific (Osaka) Region
 
-Parameters:
+Parameters: 443 TCP
 
 authorizedTcpPorts (Optional)
 Type: String
@@ -107,3 +108,4 @@ authorizedUdpPorts (Optional)
 Type: String
 Comma-separated list of UDP ports authorized to be open to 0.0.0.0/0. Ranges are defined by dash, for example, "500,1020-1025".
 
+Description: "SHOULD 18.1.13.C.02[CID:3205]| Network security/Network Management/Limiting network access"
