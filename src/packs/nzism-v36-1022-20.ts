@@ -47,7 +47,7 @@ import {
 } from '../rules/elb';
 import { IAMPolicyNoStatementsWithAdminAccess } from '../rules/iam';
 import { KMSBackingKeyRotationEnabled } from '../rules/kms';
-//import { LambdaInsideVPC } from '../rules/lambda';
+import { LambdaFunctionPublicAccessProhibited } from '../rules/lambda';
 import {
   OpenSearchEncryptedAtRest,
   OpenSearchInVPCOnly,
@@ -136,6 +136,7 @@ export class NZISM36Checks extends NagPack {
       this.checkEC2(node);
       this.checkElasticBeanstalk(node);
       this.checkElastiCache(node);
+      this.checkLambda(node);
       this.checkOpenSearch(node);
       this.checkIAM(node);
       this.checkRedshift(node);
@@ -521,22 +522,16 @@ export class NZISM36Checks extends NagPack {
       node: node,
     });
   }
-
-  // /**
-  //  * Check Lambda Resources
-  //  * @param node the CfnResource to check
-  //  * @param ignores list of ignores for the resource
-  //  */
-  // private checkLambda(node: CfnResource) {
-  //   this.applyRule({
-  //     info: 'The Lambda function is not VPC enabled | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
-  //     explanation:
-  //       'Because of their logical isolation, domains that reside within an Amazon VPC have an extra layer of security when compared to domains that use public endpoints.',
-  //     level: NagMessageLevel.ERROR,
-  //     rule: LambdaInsideVPC,
-  //     node: node,
-  //   });
-  // }
+  private checkLambda(node: CfnResource) {
+    this.applyRule({
+      info: 'The Lambda function permission grants public access - MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
+      explanation:
+        'Public access allows anyone on the internet to perform unauthenticated actions on your function and can potentially lead to degraded availability.',
+      level: NagMessageLevel.ERROR,
+      rule: LambdaFunctionPublicAccessProhibited,
+      node: node,
+    });
+  }
 
   /**
    * Check OpenSearch Resources

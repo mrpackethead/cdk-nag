@@ -721,6 +721,8 @@ describe('Check NagPack Details', () => {
         'NZISM.36.1022.20-ELBCrossZoneLoadBalancingEnabled',
         'NZISM.36.1022.20-ELBLoggingEnabled',
         'NZISM.36.1022.20-ELBTlsHttpsListenersOnly',
+        // from checkLambda
+        'NZISM.36.1022.20-LambdaFunctionPublicAccessProhibited',
         // from checkOpenSearch
         'NZISM.36.1022.20-OpenSearchInVPCOnly',
         'NZISM.36.1022.20-OpenSearchNodeToNodeEncryption',
