@@ -19,6 +19,8 @@ import {
   InstanceSize,
   Volume,
 } from 'aws-cdk-lib/aws-ec2';
+import * as cdk_ec2 from 'aws-cdk-lib/aws-ec2';
+
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Aspects, Stack, Size } from 'aws-cdk-lib/core';
 import {
@@ -35,6 +37,7 @@ import {
   EC2RestrictedSSH,
   EC2SecurityGroupDescription,
   EC2SecurityGroupOnlyTcp443,
+  EC2IMDSv2,
 } from '../../src/rules/ec2';
 import { validateStack, TestType, TestPack } from './utils';
 
@@ -52,6 +55,7 @@ const testPack = new TestPack([
   EC2RestrictedSSH,
   EC2SecurityGroupDescription,
   EC2SecurityGroupOnlyTcp443,
+  EC2IMDSv2,
 ]);
 let stack: Stack;
 
@@ -584,5 +588,39 @@ describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 
         },
       ],
     });
+    //validateStack(stack, ruleId, TestType.COMPLIANCE)
+  });
+});
+
+describe('EC2IMDSv2: Instances should use Version2 of IMDS', () => {
+  const ruleId = 'EC2IMDSv2';
+
+  test('Noncompliance', () => {
+    const vpc = new Vpc(stack, 'testvpc', {});
+    new Instance(stack, 'testinstance', {
+      vpc: vpc,
+      instanceType: cdk_ec2.InstanceType.of(
+        cdk_ec2.InstanceClass.R5,
+        cdk_ec2.InstanceSize.LARGE
+      ),
+      machineImage: cdk_ec2.MachineImage.latestAmazonLinux(),
+      requireImdsv2: false, //
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+
+
+  test('Compliance', () => {
+    const vpc = new Vpc(stack, 'testvpc', {});
+    new Instance(stack, 'testinstance', {
+      vpc: vpc,
+      instanceType: cdk_ec2.InstanceType.of(
+        cdk_ec2.InstanceClass.R5,
+        cdk_ec2.InstanceSize.LARGE
+      ),
+      machineImage: cdk_ec2.MachineImage.latestAmazonLinux(),
+      requireImdsv2: true,
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
   });
 });

@@ -12,22 +12,7 @@ Parameters:
 
 None
 
-
-## ebs-snapshot-public-restorable-check
-
-Checks whether Amazon Elastic Block Store (Amazon EBS) snapshots are not publicly restorable. The rule is NON_COMPLIANT if one or more snapshots with RestorableByUserIds field are set to all, that is, Amazon EBS snapshots are public.
-
-Identifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
-
-Trigger type: Periodic
-
-AWS Region: All supported AWS regions except Asia Pacific (Jakarta), Middle East (UAE), Asia Pacific (Osaka) Region
-
-Parameters:
-
-None
-
-## ec2-imdsv2-check
+~~## ec2-imdsv2-check~~
 
 Checks whether your Amazon Elastic Compute Cloud (Amazon EC2) instance metadata version is configured with Instance Metadata Service Version 2 (IMDSv2). The rule is NON_COMPLIANT if the HttpTokens is set to optional.
 
@@ -41,7 +26,7 @@ Parameters:
 
 None
 
-## ec2-instance-managed-by-systems-manager
+~~## ec2-instance-managed-by-systems-manager~~
 
 Checks whether the Amazon EC2 instances in your account are managed by AWS Systems Manager.
 
@@ -55,7 +40,23 @@ Parameters:
 
 None
 
-## elb-custom-security-policy-ssl-check
+
+~~## ebs-snapshot-public-restorable-check~~
+
+Checks whether Amazon Elastic Block Store (Amazon EBS) snapshots are not publicly restorable. The rule is NON_COMPLIANT if one or more snapshots with RestorableByUserIds field are set to all, that is, Amazon EBS snapshots are public.
+
+Identifier: EBS_SNAPSHOT_PUBLIC_RESTORABLE_CHECK
+
+Trigger type: Periodic
+
+AWS Region: All supported AWS regions except Asia Pacific (Jakarta), Middle East (UAE), Asia Pacific (Osaka) Region
+
+Parameters:
+
+None
+
+
+~~## elb-custom-security-policy-ssl-check~~
 
 Checks whether your Classic Load Balancer SSL listeners are using a custom policy. The rule is only applicable if there are SSL listeners for the Classic Load Balancer.
 
@@ -72,7 +73,7 @@ Type: String
 Comma separated list of ciphers and protocols.
 
 
-## lambda-function-public-access-prohibited
+~~## lambda-function-public-access-prohibited~~
 
 Checks if the AWS Lambda function policy attached to the Lambda resource prohibits public access. If the Lambda function policy allows public access it is NON_COMPLIANT.
 

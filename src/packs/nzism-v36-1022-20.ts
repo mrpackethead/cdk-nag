@@ -33,6 +33,7 @@ import {
   EC2RestrictedSSH,
   EC2EBSVolumeEncrypted,
   EC2SecurityGroupOnlyTcp443,
+  EC2IMDSv2,
 } from '../rules/ec2';
 import { ECSTaskDefinitionUserForHostMode } from '../rules/ecs';
 import { EFSEncrypted, EFSInBackupPlan } from '../rules/efs';
@@ -363,6 +364,15 @@ export class NZISM36Checks extends NagPack {
         'Not allowing ingress (or remote) traffic to ports other than tcp port 443 helps improve security',
       level: NagMessageLevel.WARN,
       rule: EC2SecurityGroupOnlyTcp443,
+      node: node,
+    });
+
+    this.applyRule({
+      info: 'THe Ec2 Instance does not use IMDSv2 | 19.1.12.C.01[CID:3562], 23.4.10.C.01[CID:7466]',
+      explanation:
+        'IMDSv2 adds additional protection by using session authentication to the Instance Meta Data Service',
+      level: NagMessageLevel.ERROR,
+      rule: EC2IMDSv2,
       node: node,
     });
   }

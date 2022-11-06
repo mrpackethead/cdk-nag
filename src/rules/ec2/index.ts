@@ -15,3 +15,4 @@ export { default as EC2RestrictedInbound } from './EC2RestrictedInbound';
 export { default as EC2RestrictedSSH } from './EC2RestrictedSSH';
 export { default as EC2SecurityGroupDescription } from './EC2SecurityGroupDescription';
 export { default as EC2SecurityGroupOnlyTcp443 } from './EC2SecurityGroupOnlyTcp443';
+export { default as EC2IMDSv2 } from './EC2IMDSv2';

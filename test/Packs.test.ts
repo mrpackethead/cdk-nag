@@ -711,6 +711,7 @@ describe('Check NagPack Details', () => {
         'NZISM.36.1022.20-EC2InstanceNoPublicIp',
         'NZISM.36.1022.20-EC2InstancesInVPC',
         'NZISM.36.1022.20-EC2RestrictedSSH',
+        'NZISM.36.1022.20-EC2IMDSv2',
         // from checkEFS
         'NZISM.36.1022.20-EFSInBackupPlan',
         // from checkElastiCache
