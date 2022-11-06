@@ -651,6 +651,8 @@ describe('Check NagPack Details', () => {
     });
     test('Pack contains expected warning and error rules', () => {
       const expectedWarnings = [
+        // from checkCloudFront
+        'NZISM.36.1022.20-CloudFrontDefaultRootObjectConfigured',
         // from checkCloudTrail
         'NZISM.36.1022.20-CloudTrailEncryptionEnabled',
         // from checkEC2

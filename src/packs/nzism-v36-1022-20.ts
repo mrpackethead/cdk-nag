@@ -10,6 +10,7 @@ import {
   CloudFrontDistributionAccessLogging,
   CloudFrontDistributionHttpsViewerNoOutdatedSSL,
   CloudFrontDistributionWAFIntegration,
+  CloudFrontDefaultRootObjectConfigured,
 } from '../rules/cloudfront';
 import {
   CloudTrailCloudWatchLogsEnabled,
@@ -96,24 +97,6 @@ import { WAFv2LoggingEnabled } from '../rules/waf';
 /**
  * Check for NZISM v36-1022-20 compliance.
  * Based on the NZISM v36-1022-20: <URL To be updated once published>
- *
- * The following rules are not yet included and are TODO items.
- *
- * CloudfrontDefaultRootObjectConfigured
- * DynamodbTableEncryptedKms
- * EbsSnapshotPublicRestorableCheck
- * Ec2HardeningAndStateManagement
- * Ec2Imdsv2Check
- * EcsContainersReadonlyAccess
- * ElbCustomSecurityPolicySslCheck
- * EmrMasterNoPublicIp
- * RdsSnapshotEncrypted
- * VpcSgOpenOnlyToAuthorizedPorts
- * lambda-function-public-access-prohibited
- *
- * A number of other checks from the NZISM Conformance Packs are account level checkes, and are excluded from stack level checks.
- *
- *
  * */
 
 export class NZISM36Checks extends NagPack {
@@ -195,6 +178,15 @@ export class NZISM36Checks extends NagPack {
         'Vulnerabilities have been and continue to be discovered in the deprecated SSL and TLS protocols. Help protect viewer connections by specifying a viewer certificate that enforces a minimum of TLSv1.1 or TLSv1.2 in the security policy. Distributions that use the default CloudFront viewer certificate or use vip for the SslSupportMethod are non-compliant with this rule, as the minimum security policy is set to TLSv1 regardless of the specified MinimumProtocolVersion',
       level: NagMessageLevel.ERROR,
       rule: CloudFrontDistributionHttpsViewerNoOutdatedSSL,
+      node: node,
+    });
+
+    this.applyRule({
+      info: 'The Cloudfront distribution requires a default object | SHOULD 14.5.6.C.01[CID:1661]',
+      explanation:
+        'Specifying a default root object lets you avoid exposing the contents of your distribution',
+      level: NagMessageLevel.WARN,
+      rule: CloudFrontDefaultRootObjectConfigured,
       node: node,
     });
   }
@@ -368,7 +360,7 @@ export class NZISM36Checks extends NagPack {
     });
 
     this.applyRule({
-      info: 'THe Ec2 Instance does not use IMDSv2 | 19.1.12.C.01[CID:3562], 23.4.10.C.01[CID:7466]',
+      info: 'THe Ec2 Instance does not use IMDSv2 | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
       explanation:
         'IMDSv2 adds additional protection by using session authentication to the Instance Meta Data Service',
       level: NagMessageLevel.ERROR,

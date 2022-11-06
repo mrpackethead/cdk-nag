@@ -609,7 +609,6 @@ describe('EC2IMDSv2: Instances should use Version2 of IMDS', () => {
     validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
   });
 
-
   test('Compliance', () => {
     const vpc = new Vpc(stack, 'testvpc', {});
     new Instance(stack, 'testinstance', {

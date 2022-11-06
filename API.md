@@ -8,7 +8,7 @@ Name|Description
 [HIPAASecurityChecks](#cdk-nag-hipaasecuritychecks)|Check for HIPAA Security compliance.
 [NIST80053R4Checks](#cdk-nag-nist80053r4checks)|Check for NIST 800-53 rev 4 compliance.
 [NIST80053R5Checks](#cdk-nag-nist80053r5checks)|Check for NIST 800-53 rev 5 compliance.
-[NZISM36Checks](#cdk-nag-nzism36checks)|Check for NZISM v36-1022-20 compliance. Based on the NZISM v36-1022-20: <URL To be updated once published>.
+[NZISM36Checks](#cdk-nag-nzism36checks)|Check for NZISM v36-1022-20 compliance.
 [NagPack](#cdk-nag-nagpack)|Base class for all rule packs.
 [NagRules](#cdk-nag-nagrules)|Helper class with methods for rule creation.
 [NagSuppressions](#cdk-nag-nagsuppressions)|Helper class with methods to add cdk-nag suppressions to cdk resources.
@@ -208,23 +208,9 @@ visit(node: IConstruct): void
 
 ## class NZISM36Checks  <a id="cdk-nag-nzism36checks"></a>
 
-Check for NZISM v36-1022-20 compliance. Based on the NZISM v36-1022-20: <URL To be updated once published>.
+Check for NZISM v36-1022-20 compliance.
 
-The following rules are not yet included and are TODO items.
-
-CloudfrontDefaultRootObjectConfigured
-DynamodbTableEncryptedKms
-EbsSnapshotPublicRestorableCheck
-Ec2HardeningAndStateManagement
-Ec2Imdsv2Check
-EcsContainersReadonlyAccess
-ElbCustomSecurityPolicySslCheck
-EmrMasterNoPublicIp
-RdsSnapshotEncrypted
-VpcSgOpenOnlyToAuthorizedPorts
-lambda-function-public-access-prohibited
-
-A number of other checks from the NZISM Conformance Packs are account level checkes, and are excluded from stack level checks.
+Based on the NZISM v36-1022-20: <URL To be updated once published>
 
 __Implements__: [IAspect](#aws-cdk-lib-iaspect)
 __Extends__: [NagPack](#cdk-nag-nagpack)
