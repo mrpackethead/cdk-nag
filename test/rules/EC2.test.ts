@@ -592,7 +592,7 @@ describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 
   });
 });
 
-describe('EC2IMDSv2: Instances should use Version2 of IMDS', () => {
+describe('EC2IMDSv2: Instances use IMDSv2', () => {
   const ruleId = 'EC2IMDSv2';
 
   test('Noncompliance', () => {

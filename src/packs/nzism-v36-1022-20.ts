@@ -102,7 +102,7 @@ import { WAFv2LoggingEnabled } from '../rules/waf';
 export class NZISM36Checks extends NagPack {
   constructor(props?: NagPackProps) {
     super(props);
-    this.packName = 'NZISM.36.1022.20';
+    this.packName = 'NZISM3.6';
   }
   public visit(node: IConstruct): void {
     if (node instanceof CfnResource) {
