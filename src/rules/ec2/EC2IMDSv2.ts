@@ -4,8 +4,14 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { parse } from 'path';
 import { CfnResource, Stack } from 'aws-cdk-lib';
+import {
+  CfnAutoScalingGroup,
+  CfnLaunchConfiguration,
+} from 'aws-cdk-lib/aws-autoscaling';
 import { CfnInstance, CfnLaunchTemplate } from 'aws-cdk-lib/aws-ec2';
 import { NagRuleCompliance, NagRules } from '../../nag-rules';
+
+// CfnLaunchConfiguration
 
 // Check to see if the EC2 Istance is configured with a launch profile
 //Ec2imdsv2
@@ -40,6 +46,60 @@ export default Object.defineProperty(
           }
         }
       }
+
+      return NagRuleCompliance.NON_COMPLIANT;
+    } else if (node instanceof CfnAutoScalingGroup) {
+      /// an autoscaling group must have either a launchTemplate or launchConfiguration, but not both
+      if (
+        node.launchTemplate === undefined &&
+        node.launchConfigurationName === undefined
+      ) {
+        return NagRuleCompliance.NON_COMPLIANT;
+      }
+      if (
+        node.launchTemplate !== undefined &&
+        node.launchConfigurationName !== undefined
+      ) {
+        return NagRuleCompliance.NON_COMPLIANT;
+      }
+
+      // a ASG may use an EC2 style LaunchTemplate
+      if (node.launchTemplate) {
+        let nodeLaunchTemplate = Stack.of(node).resolve(node.launchTemplate);
+
+        for (const child of Stack.of(node).node.findAll()) {
+          if (child instanceof CfnLaunchTemplate) {
+            if (
+              isMatchingLaunchTemplate(
+                child,
+                nodeLaunchTemplate.launchTemplateName,
+                nodeLaunchTemplate.launchTemplateId
+              ) &&
+              hasHttpTokens(child)
+            ) {
+              return NagRuleCompliance.COMPLIANT;
+            }
+          }
+        }
+      } // end of check on launchTemplate
+
+      // an ASG may use a a LaunchConfiguration
+      if (node.launchConfigurationName) {
+        let nodeLaunchConfigurationName = Stack.of(node).resolve(
+          node.launchConfigurationName
+        );
+
+        for (const child of Stack.of(node).node.findAll()) {
+          if (child instanceof CfnLaunchConfiguration) {
+            if (
+              child.launchConfigurationName === nodeLaunchConfigurationName &&
+              launchConfigurationhasTokens(child)
+            ) {
+              return NagRuleCompliance.COMPLIANT;
+            }
+          }
+        }
+      } /// end of checking LaunchConfiguration
 
       return NagRuleCompliance.NON_COMPLIANT;
     } else {
@@ -86,6 +146,17 @@ function hasHttpTokens(node: CfnLaunchTemplate): boolean {
 
   if (meta !== undefined) {
     return true;
+  }
+  return false;
+}
+
+function launchConfigurationhasTokens(node: CfnLaunchConfiguration): boolean {
+  if (node.metadataOptions != undefined) {
+    const meta: CfnLaunchTemplate.MetadataOptionsProperty =
+      NagRules.resolveResourceFromInstrinsic(node, node.metadataOptions);
+    if (meta.httpTokens) {
+      return true;
+    }
   }
   return false;
 }
