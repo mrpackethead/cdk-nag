@@ -23,15 +23,17 @@ export default Object.defineProperty(
       }
 
       // find the launchTemplate
-      let instanceLaunchTemplateName = Stack.of(node).resolve(
-        node.launchTemplate
-      ).launchTemplateName;
+      let instanceLaunchTemplate = Stack.of(node).resolve(node.launchTemplate);
 
-      // find the launchTemplate by name, and see if its got httpTokens set as 'required'
+      // find the launchTemplate by name or Id, and see if its got httpTokens set as 'required'
       for (const child of Stack.of(node).node.findAll()) {
         if (child instanceof CfnLaunchTemplate) {
           if (
-            isMatchingLaunchTemplate(child, instanceLaunchTemplateName) &&
+            isMatchingLaunchTemplate(
+              child,
+              instanceLaunchTemplate.launchTemplateName,
+              instanceLaunchTemplate.launchTemplateId
+            ) &&
             hasHttpTokens(child)
           ) {
             return NagRuleCompliance.COMPLIANT;
@@ -50,13 +52,30 @@ export default Object.defineProperty(
 
 function isMatchingLaunchTemplate(
   node: CfnLaunchTemplate,
-  launchTemplateName: string | undefined
+  launchTemplateName?: string | undefined,
+  launchTemplateId?: string | undefined
 ): boolean {
-  const templateName = NagRules.resolveResourceFromInstrinsic(
-    node,
-    node.launchTemplateName
-  );
-  return templateName === launchTemplateName;
+  if (launchTemplateId !== undefined && launchTemplateName !== undefined) {
+    // trap this, is an error, in configuration
+    throw new Error('Should not have both a templateName and templateId');
+  }
+
+  var found: boolean = false;
+
+  // test by templateName
+  if (launchTemplateName) {
+    const templateName = NagRules.resolveResourceFromInstrinsic(
+      node,
+      node.launchTemplateName
+    );
+    found = templateName === launchTemplateName;
+  }
+
+  if (launchTemplateId) {
+    const templateId = NagRules.resolveResourceFromInstrinsic(node, node.ref);
+    found = templateId === launchTemplateId;
+  }
+  return found;
 }
 
 function hasHttpTokens(node: CfnLaunchTemplate): boolean {

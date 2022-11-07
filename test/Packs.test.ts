@@ -647,7 +647,7 @@ describe('Check NagPack Details', () => {
     }
     const pack = new NZISM36ChecksExtended();
     test('Pack Name is correct', () => {
-      expect(pack.readPackName).toStrictEqual('NZISM.36.1022.20');
+      expect(pack.readPackName).toStrictEqual('NZISM3.6');
     });
     test('Pack contains expected warning and error rules', () => {
       const expectedWarnings = [
