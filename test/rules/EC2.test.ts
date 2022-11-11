@@ -2,7 +2,12 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
-import { AutoScalingGroup, Monitoring } from 'aws-cdk-lib/aws-autoscaling';
+import {
+  AutoScalingGroup,
+  CfnAutoScalingGroup,
+  CfnLaunchConfiguration,
+  Monitoring,
+} from 'aws-cdk-lib/aws-autoscaling';
 import { BackupPlan, BackupResource } from 'aws-cdk-lib/aws-backup';
 import {
   Instance,
@@ -18,7 +23,9 @@ import {
   CfnSecurityGroup,
   InstanceSize,
   Volume,
+  CfnLaunchTemplate,
 } from 'aws-cdk-lib/aws-ec2';
+
 import * as cdk_ec2 from 'aws-cdk-lib/aws-ec2';
 
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -595,7 +602,30 @@ describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 
 describe('EC2IMDSv2: Instances use IMDSv2', () => {
   const ruleId = 'EC2IMDSv2';
 
-  test('Noncompliance', () => {
+  //test an ec2 instnace with a template that does not have meta defined.
+  test('Compliance_namedtemplate1', () => {
+    const launchtemplate = new CfnLaunchTemplate(stack, 'LaunchTemplate', {
+      launchTemplateData: {
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'optional',
+        },
+      },
+    });
+
+    new CfnInstance(stack, 'testinstance', {
+      imageId: 'ami-00112233444',
+      instanceType: 't3.micro',
+      subnetId: 'subnet-0123455667',
+      launchTemplate: {
+        version: launchtemplate.attrLatestVersionNumber,
+        launchTemplateId: launchtemplate.ref,
+      },
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+  // test a ec2 instance without imdsv2
+  test('Noncompliance_noimdsv2', () => {
     const vpc = new Vpc(stack, 'testvpc', {});
     new Instance(stack, 'testinstance', {
       vpc: vpc,
@@ -609,7 +639,8 @@ describe('EC2IMDSv2: Instances use IMDSv2', () => {
     validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
   });
 
-  test('Compliance', () => {
+  // test an ec2 instance with imdsv2 using a named launch template
+  test('Compliance_namedtemplate', () => {
     const vpc = new Vpc(stack, 'testvpc', {});
     new Instance(stack, 'testinstance', {
       vpc: vpc,
@@ -621,5 +652,157 @@ describe('EC2IMDSv2: Instances use IMDSv2', () => {
       requireImdsv2: true,
     });
     validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+  //test an ec2 instance using a template id
+  test('Compliance_namedtemplate', () => {
+    const launchtemplate = new CfnLaunchTemplate(stack, 'LaunchTemplate', {
+      launchTemplateData: {
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'required',
+        },
+      },
+    });
+
+    new CfnInstance(stack, 'testinstance', {
+      imageId: 'ami-00112233444',
+      instanceType: 't3.micro',
+      subnetId: 'subnet-0123455667',
+      launchTemplate: {
+        version: launchtemplate.attrLatestVersionNumber,
+        launchTemplateId: launchtemplate.ref,
+      },
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+  //test an autoscaling instance using a ec2 styled LaunchTemplate with no tokens
+  test('Autoscaling_1', () => {
+    const launchtemplate = new CfnLaunchTemplate(stack, 'LaunchTemplate', {
+      launchTemplateData: {
+        instanceType: 't3.small',
+      },
+    });
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      //launchConfigurationName: 'string'
+      launchTemplate: {
+        version: launchtemplate.attrLatestVersionNumber,
+        launchTemplateId: launchtemplate.ref,
+      },
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+
+  //test an autoscaling instance using a ec2 syteled LaunchTemplate by id
+  test('Autoscaling_2', () => {
+    const launchtemplate = new CfnLaunchTemplate(stack, 'LaunchTemplate', {
+      launchTemplateData: {
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'required',
+        },
+      },
+    });
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      //launchConfigurationName: 'string'
+      launchTemplate: {
+        version: launchtemplate.attrLatestVersionNumber,
+        launchTemplateId: launchtemplate.ref,
+      },
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+  //test an autoscaling instance using a ec2 syteled LaunchTemplate by name
+  test('Autoscaling_3', () => {
+    const launchtemplate = new CfnLaunchTemplate(stack, 'LaunchTemplate', {
+      launchTemplateData: {
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'required',
+        },
+      },
+    });
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      //launchConfigurationName: 'string'
+      launchTemplate: {
+        version: launchtemplate.attrLatestVersionNumber,
+        launchTemplateName: launchtemplate.launchTemplateName,
+      },
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+  test('Autoscaling_4', () => {
+    const launchconfiguration = new CfnLaunchConfiguration(
+      stack,
+      'LaunchTemplate',
+      {
+        imageId: 'ami-123456',
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'required',
+        },
+        launchConfigurationName: 'thename',
+      }
+    );
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      launchConfigurationName: launchconfiguration.launchConfigurationName,
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+  test('Autoscaling_5', () => {
+    const launchconfiguration = new CfnLaunchConfiguration(
+      stack,
+      'LaunchTemplate',
+      {
+        imageId: 'ami-123456',
+        instanceType: 't3.small',
+        metadataOptions: {
+          httpTokens: 'optional',
+        },
+        launchConfigurationName: 'thename',
+      }
+    );
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      launchConfigurationName: launchconfiguration.launchConfigurationName,
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+
+  test('Autoscaling_6', () => {
+    const launchconfiguration = new CfnLaunchConfiguration(
+      stack,
+      'LaunchTemplate',
+      {
+        imageId: 'ami-123456',
+        instanceType: 't3.small',
+        launchConfigurationName: 'thename',
+      }
+    );
+
+    new CfnAutoScalingGroup(stack, 'testinstance', {
+      maxSize: '2',
+      minSize: '1',
+      launchConfigurationName: launchconfiguration.launchConfigurationName,
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
   });
 });

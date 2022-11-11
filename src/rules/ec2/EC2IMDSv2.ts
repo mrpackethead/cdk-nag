@@ -46,24 +46,8 @@ export default Object.defineProperty(
           }
         }
       }
-
       return NagRuleCompliance.NON_COMPLIANT;
     } else if (node instanceof CfnAutoScalingGroup) {
-      /// an autoscaling group must have either a launchTemplate or launchConfiguration, but not both
-      if (
-        node.launchTemplate === undefined &&
-        node.launchConfigurationName === undefined
-      ) {
-        return NagRuleCompliance.NON_COMPLIANT;
-      }
-      if (
-        node.launchTemplate !== undefined &&
-        node.launchConfigurationName !== undefined
-      ) {
-        return NagRuleCompliance.NON_COMPLIANT;
-      }
-
-      // a ASG may use an EC2 style LaunchTemplate
       if (node.launchTemplate) {
         let nodeLaunchTemplate = Stack.of(node).resolve(node.launchTemplate);
 
@@ -84,7 +68,7 @@ export default Object.defineProperty(
       } // end of check on launchTemplate
 
       // an ASG may use a a LaunchConfiguration
-      if (node.launchConfigurationName) {
+      else if (node.launchConfigurationName) {
         let nodeLaunchConfigurationName = Stack.of(node).resolve(
           node.launchConfigurationName
         );
@@ -115,36 +99,24 @@ function isMatchingLaunchTemplate(
   launchTemplateName?: string | undefined,
   launchTemplateId?: string | undefined
 ): boolean {
-  if (launchTemplateId !== undefined && launchTemplateName !== undefined) {
-    // trap this, is an error, in configuration
-    throw new Error('Should not have both a templateName and templateId');
-  }
-
-  var found: boolean = false;
-
-  // test by templateName
-  if (launchTemplateName) {
-    const templateName = NagRules.resolveResourceFromInstrinsic(
-      node,
-      node.launchTemplateName
-    );
-    found = templateName === launchTemplateName;
-  }
-
-  if (launchTemplateId) {
-    const templateId = NagRules.resolveResourceFromInstrinsic(node, node.ref);
-    found = templateId === launchTemplateId;
-  }
-  return found;
+  return (
+    launchTemplateName === node.launchTemplateName ||
+    launchTemplateId === NagRules.resolveResourceFromInstrinsic(node, node.ref)
+  );
 }
 
 function hasHttpTokens(node: CfnLaunchTemplate): boolean {
   const launchTemplateData: CfnLaunchTemplate.LaunchTemplateDataProperty =
-    NagRules.resolveResourceFromInstrinsic(node, node.launchTemplateData);
-  const meta =
-    launchTemplateData.metadataOptions as CfnLaunchTemplate.MetadataOptionsProperty;
+    Stack.of(node).resolve(node.launchTemplateData);
+  const meta = Stack.of(node).resolve(
+    launchTemplateData.metadataOptions
+  ) as CfnLaunchTemplate.MetadataOptionsProperty;
 
-  if (meta !== undefined) {
+  if (meta == undefined) {
+    return false;
+  }
+
+  if (meta.httpTokens === 'required') {
     return true;
   }
   return false;
@@ -152,9 +124,13 @@ function hasHttpTokens(node: CfnLaunchTemplate): boolean {
 
 function launchConfigurationhasTokens(node: CfnLaunchConfiguration): boolean {
   if (node.metadataOptions != undefined) {
-    const meta: CfnLaunchTemplate.MetadataOptionsProperty =
-      NagRules.resolveResourceFromInstrinsic(node, node.metadataOptions);
-    if (meta.httpTokens) {
+    const meta: CfnLaunchTemplate.MetadataOptionsProperty = Stack.of(
+      node
+    ).resolve(
+      node.metadataOptions
+    ) as CfnLaunchTemplate.MetadataOptionsProperty;
+
+    if (meta.httpTokens === 'required') {
       return true;
     }
   }
