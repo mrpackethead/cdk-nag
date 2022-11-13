@@ -550,14 +550,57 @@ describe('Amazon Elastic Block Store (EBS)', () => {
   });
 });
 
-describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 for ingress iPv4 traffic', () => {
+describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 from everything', () => {
   const ruleId = 'EC2SecurityGroupOnlyTcp443';
-  test('Noncompliance 1', () => {
+  
+  test('a non compliant ipv6 rule', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup', {
+      groupDescription: 'security group tcp port 80 open on port 80',
+      securityGroupIngress: [
+        {
+          toPort: 80,
+          ipProtocol: 'tcp',
+          cidrIpv6: '::0/0',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+  
+  test('a compliant ipv6 rule', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup', {
+      groupDescription: 'ipv6 to non ::0/0',
+      securityGroupIngress: [
+        {
+          toPort: 80,
+          ipProtocol: 'tcp',
+          cidrIpv6: '2002::1234:abcd:ffff:c0a8:101/64',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE);
+  });
+
+
+  test('no specified port', () => {
     new CfnSecurityGroup(stack, 'rSecurityGroup', {
       groupDescription: 'security group tcp port 80 open',
       securityGroupIngress: [
         {
-          fromPort: 80,
+          ipProtocol: 'tcp',
+          cidrIp: '0.0.0.0/0',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
+  });
+  
+  test('tcp port other than 443 from 0/0', () => {
+    new CfnSecurityGroup(stack, 'rSecurityGroup', {
+      groupDescription: 'security group tcp port 80 open',
+      securityGroupIngress: [
+        {
+          toPort: 80,
           ipProtocol: 'tcp',
           cidrIp: '0.0.0.0/0',
         },
@@ -566,12 +609,12 @@ describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 
     validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
   });
 
-  test('Noncompliance 2', () => {
+  test('udp port from 0/0', () => {
     new CfnSecurityGroup(stack, 'rSecurityGroup2', {
       groupDescription: 'security group with udp port 53',
       securityGroupIngress: [
         {
-          fromPort: 53,
+          toPort: 53,
           ipProtocol: 'udp',
           cidrIp: '0.0.0.0/0',
         },
@@ -580,23 +623,89 @@ describe('EC2SecurityGroupOnlyTcp443: Security Groups should only allow TCP 443 
     validateStack(stack, ruleId, TestType.NON_COMPLIANCE);
   });
 
-  test('Compliance', () => {
-    new CfnSecurityGroup(stack, 'rSecurityGroup1', {
-      groupDescription: 'security group with inbound tcp 443',
-      securityGroupIngress: [],
-    });
+  test('ipv4 tcp443 from anywhere', () => {  
     new CfnSecurityGroup(stack, 'rSecurityGroup2', {
       groupDescription: 'security group with tcp 443 ingress allowed',
       securityGroupIngress: [
         {
-          fromPort: 443,
+          toPort: 443,
           ipProtocol: 'tcp',
           cidrIp: '0.0.0.0/0',
         },
       ],
-    });
-    //validateStack(stack, ruleId, TestType.COMPLIANCE)
+     });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
   });
+
+  test('tcp80 from 10/8', () => {   
+    new CfnSecurityGroup(stack, 'rSecurityGroup2', {
+      groupDescription: 'security group with tcp 443 ingress allowed',
+      securityGroupIngress: [
+        {
+          toPort: 80,
+          ipProtocol: 'tcp',
+          cidrIp: '10.0.0.0/8',
+        },
+      ],
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
+  });
+
+  test('ingressGroupCompliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 443,
+      cidrIp: '0.0.0.0/0'
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
+  })
+
+  test('ingressGroupNonCompliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 80,
+      cidrIp: '0.0.0.0/0'
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE)
+  })
+
+  test('ingressGroupNonCompliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 443,
+      cidrIp: '10.0.0.0/8'
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
+  })
+
+  test('ingressgroup, ipv6 compliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 443,
+      cidrIpv6: '::/0'
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
+  })
+
+  test('ingressGroup, non compliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 80,
+      cidrIpv6: '::/0'
+    });
+    validateStack(stack, ruleId, TestType.NON_COMPLIANCE)
+  })
+
+  test('ingressGroupnonopenCompliant', () => {
+    new CfnSecurityGroupIngress(stack, 'ingressGroup', {
+      ipProtocol: 'tcp',
+      toPort: 80,
+      cidrIpv6: 'FE80:CD00:0:CDE:1257:0:211E:729C/64'
+    });
+    validateStack(stack, ruleId, TestType.COMPLIANCE)
+  })
+
+
 });
 
 describe('EC2IMDSv2: Instances use IMDSv2', () => {
