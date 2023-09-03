@@ -135,6 +135,7 @@ export class NZISM36Checks extends NagPack {
 
   /**
    * Check API Gateway Resources
+   * E
    * @param node the CfnResource to check
    * @param ignores list of ignores for the resource
    */
@@ -181,6 +182,7 @@ export class NZISM36Checks extends NagPack {
       node: node,
     });
 
+    // this rule is a new addition
     this.applyRule({
       info: 'The Cloudfront distribution requires a default object | SHOULD 14.5.6.C.01[CID:1661]',
       explanation:
@@ -350,6 +352,7 @@ export class NZISM36Checks extends NagPack {
       node: node,
     });
 
+    // this is new rule
     this.applyRule({
       info: 'The Security Group allows access other than tcp 443 - SHOULD 18.1.13.C.02[CID:3205]',
       explanation:
@@ -359,6 +362,7 @@ export class NZISM36Checks extends NagPack {
       node: node,
     });
 
+    // this can be modified to use EC2IMDVs enabled.
     this.applyRule({
       info: 'THe Ec2 Instance does not use IMDSv2 | MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
       explanation:
@@ -524,6 +528,12 @@ export class NZISM36Checks extends NagPack {
       node: node,
     });
   }
+
+  /**
+   * Check Lambda
+   * @param node 
+   */
+
   private checkLambda(node: CfnResource) {
     this.applyRule({
       info: 'The Lambda function permission grants public access - MUST 19.1.12.C.01[CID:3562], MUST 23.4.10.C.01[CID:7466]',
@@ -705,6 +715,7 @@ export class NZISM36Checks extends NagPack {
       rule: S3BucketLevelPublicAccessProhibited,
       node: node,
     });
+    // THIS IS NEW RULE.
     this.applyRule({
       info: 'The S3 Bucket does not have default server-side encryption enabled | SHOULD 17.1.46.C.04[CID:2082]',
       explanation:
