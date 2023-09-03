@@ -531,7 +531,7 @@ export class NZISM36Checks extends NagPack {
 
   /**
    * Check Lambda
-   * @param node 
+   * @param node
    */
 
   private checkLambda(node: CfnResource) {
